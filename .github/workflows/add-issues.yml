@@ -1,14 +1,8 @@
 name: Add Issues to Project
 on:
   workflow_dispatch:
-  push: 
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  # schedule:
-  #   - cron: '0 0 * * 1' # At 00:00 on Monday
+  schedule:
+    - cron: '*/60 5-20 * * *' # At every 60th minute past every hour from 5 through 20.
 
 jobs:
   add-issues:

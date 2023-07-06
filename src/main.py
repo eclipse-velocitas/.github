@@ -58,7 +58,6 @@ for repo in repos:
         shell=True,
     )
     issues = json.loads(issue_list_command)
-    print(issues)
     for issue in issues:
         if not issue["projectItems"] and check_labels(issue["labels"]):
             item_add_command = subprocess.check_output(
