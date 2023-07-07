@@ -2,7 +2,7 @@ name: Add issues to project backlog
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/60 5-20 * * *' # At every 60th minute past every hour from 5 through 20.
+    - cron: '0 5-20 * * *' # At minute 0 past every hour from 5 through 20.
 
 jobs:
   add-issues:
