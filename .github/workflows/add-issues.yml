@@ -1,6 +1,9 @@
 name: Add Issues to Project
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: '*/60 5-20 * * *' # At every 60th minute past every hour from 5 through 20.
 
@@ -17,5 +20,5 @@ jobs:
         with:
           version: latest
       - name: execute add issue python script
-        run: python src/main.py
+        run: python src/project-issues.py --owner eclipse-velocitas --project "Velocitas Backlog" --allowed-labels bug question enhancement
 
