@@ -1,9 +1,21 @@
+# Copyright (c) 2023 Robert Bosch GmbH
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 import argparse
 import json
 import subprocess
-
 from typing import List
-
 
 project_number: str
 project_id: str
@@ -13,7 +25,7 @@ new_single_select_id: str
 
 def get_project_information(owner: str, project_name: str) -> None:
     project_list_command = subprocess.check_output(
-        f"gh project list --owner {owner} --format json", shell=True
+        ["gh", "project", "list", "--owner", owner, "--format", "json"]
     )
     project_list = json.loads(project_list_command)
     for project in project_list["projects"]:
@@ -26,8 +38,16 @@ def get_project_information(owner: str, project_name: str) -> None:
 
 def get_project_field_ids(owner: str) -> None:
     project_field_command = subprocess.check_output(
-        f"gh project field-list {project_number} --owner {owner} --format json",
-        shell=True,
+        [
+            "gh",
+            "project",
+            "field-list",
+            str(project_number),
+            "--owner",
+            owner,
+            "--format",
+            "json",
+        ]
     )
     project_fields = json.loads(project_field_command)
     for field in project_fields["fields"]:
@@ -51,33 +71,70 @@ def check_labels(labels, allowed_labels: List[str]) -> bool:
     return False
 
 
-def add_project_issues(owner: str, project_name: str, allowed_labels: List[str]) -> None:
+def add_project_issues(
+    owner: str, project_name: str, allowed_labels: List[str]
+) -> None:
     get_project_information(owner, project_name)
     get_project_field_ids(owner)
 
     repo_list_command = subprocess.check_output(
-        f"gh repo list {owner} --json name", shell=True
+        ["gh", "repo", "list", owner, "--json", "name"]
     )
     repos = json.loads(repo_list_command)
 
     for repo in repos:
-        issue_list_command = subprocess.check_output(
-            f'gh issue list -R {owner}/{repo["name"]} --json title,projectItems,url,labels',
-            shell=True,
-        )
-        issues = json.loads(issue_list_command)
-        for issue in issues:
-            if not issue["projectItems"] and check_labels(issue["labels"], allowed_labels):
-                item_add_command = subprocess.check_output(
-                    f'gh project item-add {project_number} --owner {owner} --url {issue["url"]} --format json',
-                    shell=True,
-                )
-                added_item = json.loads(item_add_command)
-                subprocess.check_output(
-                    f'gh project item-edit --id {added_item["id"]} --field-id {status_field_id} --project-id {project_id} --single-select-option-id {new_single_select_id}',
-                    shell=True,
-                )
-                print(f'Added Issue: {added_item["title"]} URL: {added_item["url"]}')
+        try:
+            issue_list_command = subprocess.check_output(
+                [
+                    "gh",
+                    "issue",
+                    "list",
+                    "-R",
+                    f"{owner}/{repo['name']}",
+                    "--json",
+                    "title,projectItems,url,labels",
+                ]
+            )
+            issues = json.loads(issue_list_command)
+            for issue in issues:
+                if not issue["projectItems"] and check_labels(
+                    issue["labels"], allowed_labels
+                ):
+                    item_add_command = subprocess.check_output(
+                        [
+                            "gh",
+                            "project",
+                            "item-add",
+                            str(project_number),
+                            "--owner",
+                            owner,
+                            "--url",
+                            issue["url"],
+                            "--format",
+                            "json",
+                        ]
+                    )
+                    added_item = json.loads(item_add_command)
+                    subprocess.check_output(
+                        [
+                            "gh",
+                            "project",
+                            "item-edit",
+                            "--id",
+                            added_item["id"],
+                            "--field-id",
+                            status_field_id,
+                            "--project-id",
+                            project_id,
+                            "--single-select-option-id",
+                            new_single_select_id,
+                        ],
+                    )
+                    print(
+                        f'Added Issue: {added_item["title"]} URL: {added_item["url"]}'
+                    )
+        except Exception as e:
+            print(f"Error retrieving issues: {str(e)}")
 
 
 def main():
@@ -94,9 +151,9 @@ def main():
     )
     parser.add_argument(
         "--allowed-labels",
-        nargs='+',
+        nargs="+",
         default=[],
-        help='List of allowed labels to check.',
+        help="List of allowed labels to check.",
     )
     args = parser.parse_args()
     add_project_issues(args.owner, args.project, args.allowed_labels)
