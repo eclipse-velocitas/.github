@@ -41,6 +41,9 @@ def get_project_field_ids(owner: str) -> None:
 
 
 def check_labels(labels, allowed_labels: List[str]) -> bool:
+    if not allowed_labels:  # Add all issues if no labels are specified
+        return True
+
     for label in labels:
         name = label["name"]
         if name in allowed_labels:
