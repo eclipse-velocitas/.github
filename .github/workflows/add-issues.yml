@@ -1,9 +1,6 @@
-name: Add Issues to Project
+name: Add issues to project backlog
 on:
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
   schedule:
     - cron: '*/60 5-20 * * *' # At every 60th minute past every hour from 5 through 20.
 
