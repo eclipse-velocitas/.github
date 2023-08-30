@@ -19,8 +19,8 @@ from typing import List
 
 project_number: str
 project_id: str
-status_field_id: str
-new_single_select_id: str
+status_field_id: str = "PVTSSF_lADOBmS-m84AM-x0zgISFug"
+new_single_select_id: str = "8f97c9c6"
 
 
 def get_project_information(owner: str, project_name: str) -> None:
@@ -35,29 +35,34 @@ def get_project_information(owner: str, project_name: str) -> None:
             global project_number
             project_number = project["number"]
 
-
-def get_project_field_ids(owner: str) -> None:
-    project_field_command = subprocess.check_output(
-        [
-            "gh",
-            "project",
-            "field-list",
-            str(project_number),
-            "--owner",
-            owner,
-            "--format",
-            "json",
-        ]
-    )
-    project_fields = json.loads(project_field_command)
-    for field in project_fields["fields"]:
-        if field["name"] == "Status":
-            global status_field_id
-            status_field_id = field["id"]
-            for option in field["options"]:
-                if option["name"] == "🆕 New":
-                    global new_single_select_id
-                    new_single_select_id = option["id"]
+# This gh cli call has problem when too many issues are in the project
+# The internal API call gets a too long response body
+# With this function we wanted to get the
+# status_field_id and new_single_select_id
+# We can hard code this since the fields are IDs
+#
+# def get_project_field_ids(owner: str) -> None:
+#     project_field_command = subprocess.check_output(
+#         [
+#             "gh",
+#             "project",
+#             "field-list",
+#             str(project_number),
+#             "--owner",
+#             owner,
+#             "--format",
+#             "json",
+#         ]
+#     )
+#     project_fields = json.loads(project_field_command)
+#     for field in project_fields["fields"]:
+#         if field["name"] == "Status": # PVTSSF_lADOBmS-m84AM-x0zgISFug
+#             global status_field_id
+#             status_field_id = field["id"]
+#             for option in field["options"]:
+#                 if option["name"] == "🆕 New": # 8f97c9c6
+#                     global new_single_select_id
+#                     new_single_select_id = option["id"]
 
 
 def check_labels(labels, allowed_labels: List[str]) -> bool:
@@ -75,7 +80,7 @@ def add_project_issues(
     owner: str, project_name: str, allowed_labels: List[str]
 ) -> None:
     get_project_information(owner, project_name)
-    get_project_field_ids(owner)
+    # get_project_field_ids(owner)
 
     repo_list_command = subprocess.check_output(
         ["gh", "repo", "list", owner, "--json", "name"]
