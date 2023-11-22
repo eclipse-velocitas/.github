@@ -6,5 +6,4 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Contributors:
 *   Robert Bosch GmbH - initial API and implementation
-*   Microsoft Corporation - initial API and implementation
 *   Contributors to the Eclipse Foundation - major maintaince
